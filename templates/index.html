@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        #conversation {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #question {
+            width: calc(100% - 80px); 
+            margin-bottom: 10px;
+        }
+        button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chatbot</h1>
+
+    <div id="conversation"></div>
+    
+    <textarea id="question" rows="4" cols="50"></textarea><br>
+    
+    <button onclick="ask()">Hỏi</button>
+
+    <script>
+        var conversation = []; 
+
+        function updateConversation() {
+            var conversationDiv = document.getElementById("conversation");
+            conversationDiv.innerHTML = ""; 
+            conversation.forEach(function(item) {
+                conversationDiv.innerHTML += "<p><strong>Bạn:</strong> " + item.question + "</p>";
+                conversationDiv.innerHTML += "<p><strong>Bot:</strong> " + item.answer + "</p>";
+            });
+        }
+
+        function ask() {
+            var question = document.getElementById("question").value;
+            fetch("/ask", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ question: question })
+            })
+            .then(response => response.json())
+            .then(data => {
+                var answer = data.answer;
+                conversation.unshift({ question: question, answer: answer }); 
+                updateConversation(); 
+                document.getElementById("question").value = ""; 
+            });
+        }
+
+        document.getElementById("question").addEventListener("keypress", function(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                ask();
+            }
+        });
+    </script>
+</body>
+</html>
